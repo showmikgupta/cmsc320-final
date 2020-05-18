@@ -1,0 +1,84 @@
+---
+title: "Final Project"
+author: "Showmik Gupta"
+date: "5/15/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Main Question: Are assaults against women in India going down over time?
+
+Introduction:
+Violence against women in India has always been a problem. Traditionally, marriages in India and other countried in South Asia are arranged. This ususally entails a dowry paid to the groom's family from the bride's family. Families pay a dowry as a way to pay the other family to take away the women, and this is only but one reason for dowries. However, if the dowry isn't high enough, women can get beat or even killed. Another reason this is an urgent matter is because of a recent incident India where a group of men sexaully harrassed a group of women at an women's college. This dataset we will be looking at has data on different types of crimes India, but we will be focusing solely on assault on women. A good note about this dataset is that ir reports on crimes regardless of what caste the person was from.
+
+For more information on assault on women in India visit: https://www.theguardian.com/commentisfree/2018/apr/27/india-abuse-women-human-rights-rape-girls
+
+For information on the incident at the women's college visit: https://www.cnn.com/2020/02/10/india/india-students-strike-assault-intl/index.html
+
+```{r packages}
+#load packages
+library(tidyverse) #data manipulation
+library(dplyr) #data manipulation
+library(ggplot2) #visualization
+```
+
+```{r data}
+crime_data <- read.csv("crimeanalysis/crime_by_state.csv") #loading dataset
+str(crime_data)
+```
+
+Next we are going to rename some of the attributes (STATE.UT to State and Assault.on.women to AssaultOnWomen) for easier referencing during operations. We are also going to get rid of all attributes except for AssaultOnWomen since we will not be using them for this analysis. Lastly, we are going to tidy this datasey by removing the 'TOTAL (...)' rows and add them as attributes based on the year i.e. total01, total02, etc.
+
+```{r data_trimming}
+crime_data_renamed <- crime_data %>% select(STATE.UT, Year, Assault.on.women) %>%
+  rename(State=STATE.UT) %>%
+  rename(AssaultOnWomen=Assault.on.women)
+
+crime_data_upd <- crime_data_renamed %>%
+  filter(State != "TOTAL (ALL-INDIA)" & State != "TOTAL (UTs)" & State != "TOTAL (STATES)") %>%
+  mutate(total01 = 1316) %>%
+  mutate(total02 = 1331) %>%
+  mutate(total03 = 1089) %>%
+  mutate(total04 = 1157) %>%
+  mutate(total05 = 1172) %>%
+  mutate(total06 = 1217) %>%
+  mutate(total07 = 1349) %>%
+  mutate(total08 = 1453) %>%
+  mutate(total09 = 1350) %>%
+  mutate(total10 = 1350) %>%
+  mutate(total11 = 1557) %>%
+  mutate(total12 = 1576)
+```
+
+The below code and plot shows how assault on women changed from 2001 to 2012 in each state in India. A majority of that states have a fairly similar and low cases of assault on women while two states, Madhya Pradesh and Uttar Pradesh, have much higher cases of assault on women.
+
+```{r plot_assault_over_year}
+all_states <- crime_data_upd %>%
+  ggplot(mapping=aes(x=factor(Year), y=AssaultOnWomen, group=State)) +
+  geom_line(aes(color=State)) +
+  geom_point(aes(color=State))
+plot(all_states)
+```
+
+After looking at the above plot, some state have an even amount of cases and some seem to have an increasing amount of cases over time. To see if the number of cases of assault on women are increasing, let's take a look at the number of these cases of all of India over time.
+
+```{r plot_assault_over_year_india}
+crime_data_india <- crime_data_renamed %>%
+  filter(State == "TOTAL (ALL-INDIA)")
+
+all_india <- crime_data_india %>%
+  ggplot(mapping=aes(x=Year, y=AssaultOnWomen)) +
+  geom_line() +
+  geom_point() +
+  geom_smooth(method=lm)
+plot(all_india)
+```
+
+
+
+From this plot, it seems to be the the number of cases of assault on women is indeed increasing.
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
